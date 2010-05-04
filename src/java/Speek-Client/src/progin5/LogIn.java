@@ -93,7 +93,7 @@ public class LogIn extends javax.swing.JFrame {
                                 .addComponent(BCancel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(BLogIn)))))
-                .addContainerGap(59, Short.MAX_VALUE))
+                .addContainerGap(65, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(204, Short.MAX_VALUE)
                 .addComponent(jLabel4)
@@ -147,7 +147,7 @@ public class LogIn extends javax.swing.JFrame {
      
         int pkt_len = DLogin.length() + 20;
         System.out.println("pkt_len " + pkt_len);
-        Protocol PLogin = new Protocol(DName, 999, pkt_len, Protocol.SMSG_SERVICE_LOGON, 0, DLogin);
+        Protocol PLogin = new Protocol(DName, 1000, pkt_len, 1000, 1000, DLogin);
         PLogin.run(PLogin);
 
         //create connection

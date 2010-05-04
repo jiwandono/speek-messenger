@@ -36,7 +36,7 @@ public class Protocol {
 
     //socket
     public Socket requestSocket;
-    public ObjectOutputStream out;
+    public BufferedOutputStream out;
     public ObjectInputStream in;
     public String message;
 
@@ -84,10 +84,9 @@ public class Protocol {
 	}
 
     public void sendMessage(Protocol MyProtocol) throws IOException {
-        out = new ObjectOutputStream(requestSocket.getOutputStream());
+        out = new BufferedOutputStream(requestSocket.getOutputStream());
         ByteBuffer buf = ByteBuffer.allocate(MyProtocol.pkt_len);
         buf.put(MyProtocol.name.getBytes("US-ASCII"));
-        System.out.println("s=" + buf.array().length);
         buf.putInt(MyProtocol.version);
         buf.putInt(MyProtocol.pkt_len);
         buf.putInt(MyProtocol.service);
@@ -96,7 +95,6 @@ public class Protocol {
         System.out.println("MP pkt_len " + MyProtocol.pkt_len);
         System.out.println("buf len " + buf.array().length);
         out.write(buf.array());
-        System.out.println("buf=[" + buf.array() + "]");
         out.close();
     }
 

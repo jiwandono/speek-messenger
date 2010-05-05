@@ -1,3 +1,10 @@
+#ifndef _SPEEK_PROTOCOL
+#define _SPEEK_PROTOCOL
+
+#define PROTOCOL_NAME "SMSG"
+
+#define PORT 7674
+
 typedef struct {
 	char name[4];
 	int version;
@@ -6,6 +13,8 @@ typedef struct {
 	int status;
 	char data[32768];
 } protocol;
+
+#define SPEEK_VERSION	1
 
 #define SMSG_SERVICE_LOGON	1
 #define SMSG_SERVICE_LOGOFF	2
@@ -25,46 +34,47 @@ typedef struct {
 /*
  * SMSG_SERVICE_LOGON
  * Client:
- * \30 username \31 password
+ * \30username\31password
  * Server:
  * Server akan mengembalikan status 1 kalau login sukses, 0 kalau gagal
  *
  * SMSG_SERVICE_LOGOFF
  * Client:
- * \30 username
+ * \30username
  *
  * SMSG_MESSAGE
  * Client:
- * \30 sender \31 receiver \31 message
+ * \30sender\31receiver\31message
  * Server:
  * Teruskan ke client receiver
  *
  * SMSG_RETFRIEND
  * Client:
- * \30 username
+ * \30username
  * Server:
- * \30 friendname1 \31 status1 \30 friendname \31 status2
+ * \30friendname1\31status1\30friendname\31status2
  *
  * SMSG_ADDFRIEND
  * Client:
- * \30 username \31 friendname
+ * \30username\31friendname
  * Server:
  * Status 1 kalau berhasil, 0 kalau gagal
  *
  * SMSG_REMFRIEND
  * Client:
- * \30 username \31 friendname
+ * \30username\31friendname
  * Server:
  * Status 1 kalau berhasil, 0 kalau gagal
  *
  * SMSG_STATUS_UPDATE
  * Server:
- * \30 username \31 status
+ * \30username\31status
  *
  * SMSG_REGISTER
  * Client:
- * \30 username \31 status
+ * \30username\31status
  * Server:
  * Status 1 kalau berhasil, 0 kalau gagal
  */
 
+#endif

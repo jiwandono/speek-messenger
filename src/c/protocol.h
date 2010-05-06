@@ -75,6 +75,14 @@ typedef struct {
  * \30username\31status
  * Server:
  * Status 1 kalau berhasil, 0 kalau gagal
+ *
+ * SMSG_FILETRANSFER
+ * Client:
+ * \30targetusername
+ * Server
+ * Status: SMSG_STATUS_SUCCESS atau SMSG_STATUS_FAILED
+ * \30ipaddress
+ *
  */
 
 #endif

@@ -241,7 +241,7 @@ int processMessage(int sd, protocol imsg) {
 			break;
 		
 		case SMSG_SERVICE_LOGOFF:
-			printf("[CLIENT-%d] Logoff requested.\n", sd);
+			printf("[CLIENT-%d] Logged off.\n", sd);
 			break;
 		
 		case SMSG_MESSAGE:
@@ -277,6 +277,28 @@ int processMessage(int sd, protocol imsg) {
 			break;
 		
 		case SMSG_FILETRANSFER:
+			username = strtok(imsg.data, "\30");
+			
+			printf("[CLIENT-%d] File transfer request to %s\n", sd, username);
+			
+			strcpy(query, "SELECT `ip` FROM `presence` WHERE `userid` = (SELECT `id` AS `userid` FROM `user` WHERE `username` = '");
+			strcat(query, username);
+			strcat(query, "')");
+			dbres = db_query(dbconn, query);
+			
+			if(mysql_num_rows(dbres) > 0) {
+				row = mysql_fetch_row(dbres);
+				
+				printf("[CLIENT-%d] User %s connected from %s\n", sd, username, row[0]);
+				
+				omsg.status = htonl(SMSG_STATUS_SUCCESS);
+				strcpy(omsg.data, "\30");
+				strcat(omsg.data, row[0]);
+			} else {
+				printf("[CLIENT-%d] User %s is offline. Filetransfer not possible.\n", sd, username);
+				
+				omsg.status = htonl(SMSG_STATUS_FAILED);
+			}
 			
 			break;
 		
@@ -313,10 +335,6 @@ int processMessage(int sd, protocol imsg) {
 					}
 				}
 			}
-			
-			break;
-		
-		case SMSG_STATUSUPDATE:
 			
 			break;
 		
@@ -358,6 +376,7 @@ int main(int argc, char *argv[]) {
 	
 	int listener;	/* listening socket descriptor */	
 	int newfd;		/* newly accept()ed socket descriptor */
+	int tsd;		/* temporary socket descriptor */
 	
 	int nbytes;		/* buffer for client data */
 	
@@ -427,6 +446,7 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 	printf("[SERVER] Listening on port %d...OK\n", PORT);
+	printf("[SERVER] Server is ready to accept connections\n\n");
 
 	/* add the listener to the master set */
 	FD_SET(listener, &master);
@@ -488,10 +508,10 @@ int main(int argc, char *argv[]) {
 							perror("Client disconnected");
 						}
 						
-						/* TODO -- Broadcast off status to online friends
-						strcpy(query, "SELECT DISTINCT `user`.`username`, `presence`.`sd` FROM `user`, `friend` LEFT JOIN `presence` ON (`friend`.`buddy2` = `presence`.`userid`) WHERE `friend`.`buddy2` = `user`.`id` AND `friend`.`buddy1` = '");
-						strcat(query, itoa(logon_userid, tstr1, 10));
-						strcat(query, "'");
+						/* Broadcast off status to online friends */
+						strcpy(query, "SELECT DISTINCT `user`.`username`, `presence`.`sd` FROM `user`, `friend` LEFT JOIN `presence` ON (`friend`.`buddy2` = `presence`.`userid`) WHERE `friend`.`buddy2` = `user`.`id` AND `friend`.`buddy1` = (SELECT `userid` AS `buddy1` FROM `presence` WHERE `sd` = '");
+						strcat(query, itoa(i, tstr1, 10));
+						strcat(query, "')");
 						dbres = db_query(dbconn, query);
 						
 						while((row = mysql_fetch_row(dbres)) != NULL) {
@@ -499,23 +519,22 @@ int main(int argc, char *argv[]) {
 								tsd = atoi(row[1]);
 								printf("[SERVER] Sending status update to %s @ sd=%d\n", row[0], tsd);
 								
-								memset(&tmsg, '\0', sizeof(protocol));
+								memset(&omsg, '\0', sizeof(protocol));
 								
-								strcpy(tmsg.name, PROTOCOL_NAME);
-								tmsg.version = htonl(SPEEK_VERSION);
-								tmsg.service = htonl(SMSG_STATUSUPDATE);
-								tmsg.status = htonl(SMSG_STATUS_ONLINE);
-								strcpy(tmsg.data, "\30");
-								strcat(tmsg.data, username);
+								strcpy(omsg.name, PROTOCOL_NAME);
+								omsg.version = htonl(SPEEK_VERSION);
+								omsg.service = htonl(SMSG_STATUSUPDATE);
+								omsg.status = htonl(SMSG_STATUS_OFFLINE);
+								strcpy(omsg.data, "\30");
+								strcat(omsg.data, username);
 								
-								size = measurePacket(&tmsg);
+								nbytes = measurePacket(&omsg);
 								
-								printPacket(tmsg);
+								printPacket(omsg);
 								
-								send(tsd, (void *)& tmsg, size, 0);
+								send(tsd, (void *)& omsg, nbytes, 0);
 							}
 						}
-						*/
 						
 						/* Update presence table */
 						strcpy(query, "DELETE FROM `presence` WHERE `sd` = '");

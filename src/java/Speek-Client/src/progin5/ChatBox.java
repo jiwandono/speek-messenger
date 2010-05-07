@@ -166,7 +166,7 @@ public class ChatBox extends javax.swing.JFrame {
     private void jTextField2KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField2KeyPressed
         // TODO add your handling code here:
         int id = evt.getKeyCode();
-        if (id == KeyEvent.VK_ENTER) {
+        if (id == KeyEvent.VK_ENTER && !jTextField2.getText().equals("")) {
             String textChat = jTextField2.getText();
             String areaChat = jTextArea1.getText();
             String tData = '\30'+Login.SMSG_PROTOCOL.username+'\31'+getTitle()+'\31'+textChat;

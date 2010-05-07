@@ -203,7 +203,7 @@ public class Login extends javax.swing.JFrame {
 
     public void actLogin()
     {
-        if(txtPassword.getText() != null && txtUser.getText() != null)
+        if(!txtPassword.getText().equalsIgnoreCase("") && !txtUser.getText().equalsIgnoreCase(""))
         {
             this.setVisible(false);
             //Menu.setIconImage(new ImageIcon("src/resource/mugabe.png").getImage());

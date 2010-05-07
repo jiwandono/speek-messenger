@@ -1,9 +1,4 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
  * MainMenu.java
  *
  * Created on 02 Mei 10, 11:38:13
@@ -11,15 +6,85 @@
 
 package progin5;
 
+
+import java.util.LinkedList;
+import javax.swing.DefaultListModel;
+import javax.swing.JFrame;
+import javax.swing.JList;
+
+
 /**
  *
  * @author Ananti
  */
 public class MainMenu extends javax.swing.JFrame {
 
+    private static MainMenu tMainMenu = new MainMenu();
+
+    private DefaultListModel ListModel2 = new DefaultListModel();
+    private JList list = new JList(ListModel2);
+    private DefaultListModel ListModel3 = new DefaultListModel();
+    private JList list2 = new JList(ListModel3);
+    public LinkedList<String> buddyOnline  = new LinkedList<String>();
+    public LinkedList<String> buddyOffline  = new LinkedList<String>();
+
     /** Creates new form MainMenu */
     public MainMenu() {
         initComponents();
+        //ListModel2 = new DefaultListModel();
+        //list = new JList(ListModel2);
+        //sortedModel = new SortedListModel(ListModel2);
+        updateFriend();
+        //addElmt();
+    }
+
+    public static MainMenu getSingleton()
+    {
+        return tMainMenu;
+    }
+
+    public void setUsername(String tInput)
+    {
+        this.username.setText("hai " + tInput + "!");
+    }
+
+    public void setBuddy(String [] tList)
+    {
+        for(int i = 0; i < tList.length; i++)
+            System.out.print(tList[i]);
+        buddyOnline.clear();
+        buddyOffline.clear();
+        for(int i = 1; i < tList.length; i++)
+        {
+            String tFriend[] = tList[i].split("\31");
+            System.out.println("|"+tFriend[0]+"|"+tFriend[1]);
+            if(tFriend[1].equals(Integer.toString(Protocol.SMSG_STATUS_ONLINE)))
+                buddyOnline.add(tFriend[0]);
+            else if(tFriend[1].equals(Integer.toString(Protocol.SMSG_STATUS_OFFLINE)))
+                buddyOffline.add(tFriend[0]);
+        }
+        buddyOnline.add(" ");
+        buddyOffline.add(" ");
+        
+        setFriend();
+        System.out.println("berhasil diupdate");
+    }
+
+    public void setFriend() {
+        for (String data : buddyOnline ) {
+            System.out.println("ini buddy online : "+data);
+        }
+        for (String data : buddyOffline ) {
+            System.out.println("ini buddy offline : "+data);
+        }
+        ListModel2.clear();
+        for (String data : buddyOnline ) {
+            ListModel2.addElement(data);
+        }
+        ListModel3.clear();
+        for (String data : buddyOffline ) {
+            ListModel3.addElement(data);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -31,40 +96,102 @@ public class MainMenu extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jTabbedPane1 = new javax.swing.JTabbedPane();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        Online = new javax.swing.JList();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jList1 = new javax.swing.JList();
+        username = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
-        jMenu2 = new javax.swing.JMenu();
         jMenu3 = new javax.swing.JMenu();
         jMenuItem3 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setResizable(false);
 
-        jTabbedPane1.setName("jTabbedPane1"); // NOI18N
+        jScrollPane1.setName("jScrollPane1"); // NOI18N
+
+        Online.setBorder(javax.swing.BorderFactory.createTitledBorder("Online"));
+        Online.setModel(ListModel2);
+        Online.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        Online.setName("Online"); // NOI18N
+        Online.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                OnlineMouseClicked(evt);
+            }
+        });
+        Online.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                OnlineValueChanged(evt);
+            }
+        });
+        jScrollPane1.setViewportView(Online);
+
+        jScrollPane2.setName("jScrollPane2"); // NOI18N
+
+        jList1.setBorder(javax.swing.BorderFactory.createTitledBorder("Offline"));
+        jList1.setModel(ListModel3);
+        jList1.setName("jList1"); // NOI18N
+        jList1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jList1MouseClicked(evt);
+            }
+        });
+        jScrollPane2.setViewportView(jList1);
+
+        username.setText(" ");
+        username.setName("username"); // NOI18N
 
         jMenuBar1.setName("jMenuBar1"); // NOI18N
 
         jMenu1.setLabel("Account");
         jMenu1.setName("jMenu1"); // NOI18N
 
+        jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_B, java.awt.event.InputEvent.CTRL_MASK));
         jMenuItem1.setActionCommand("addfriend");
         jMenuItem1.setLabel("Add Friend...");
         jMenuItem1.setName("addfriend"); // NOI18N
+        jMenuItem1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jMenuItem1MouseClicked(evt);
+            }
+        });
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
+        jMenuItem1.addMenuKeyListener(new javax.swing.event.MenuKeyListener() {
+            public void menuKeyPressed(javax.swing.event.MenuKeyEvent evt) {
+                jMenuItem1MenuKeyPressed(evt);
+            }
+            public void menuKeyReleased(javax.swing.event.MenuKeyEvent evt) {
+            }
+            public void menuKeyTyped(javax.swing.event.MenuKeyEvent evt) {
+            }
+        });
         jMenu1.add(jMenuItem1);
         jMenuItem1.getAccessibleContext().setAccessibleName("addfriend");
 
+        jMenuItem2.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
         jMenuItem2.setLabel("Logout");
         jMenuItem2.setName("jMenuItem2"); // NOI18N
+        jMenuItem2.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jMenuItem2MouseClicked(evt);
+            }
+        });
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
         jMenu1.add(jMenuItem2);
         jMenuItem2.getAccessibleContext().setAccessibleName("logout");
 
         jMenuBar1.add(jMenu1);
-
-        jMenu2.setLabel("Transfer");
-        jMenu2.setName("jMenu2"); // NOI18N
-        jMenuBar1.add(jMenu2);
 
         jMenu3.setLabel("Help");
         jMenu3.setName("jMenu3"); // NOI18N
@@ -84,19 +211,111 @@ public class MainMenu extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 481, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(username, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE)
+                .addGap(11, 11, 11)
+                .addComponent(username)
+                .addGap(5, 5, 5)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 253, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void jMenuItem1MenuKeyPressed(javax.swing.event.MenuKeyEvent evt) {//GEN-FIRST:event_jMenuItem1MenuKeyPressed
+        // TODO add your handling code here:
+        
+    }//GEN-LAST:event_jMenuItem1MenuKeyPressed
+
+    private void jMenuItem1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jMenuItem1MouseClicked
+        // TODO add your handling code here:
+        AddFriend add = new AddFriend();
+        add.setVisible(true);
+        add.setLocationRelativeTo(null);
+        add.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    }//GEN-LAST:event_jMenuItem1MouseClicked
+
+    private void jMenuItem2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jMenuItem2MouseClicked
+        // TODO add your handling code here:
+        this.dispose();
+    }//GEN-LAST:event_jMenuItem2MouseClicked
+
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+        // TODO add your handling code here:
+        AddFriend add = new AddFriend();
+        add.setVisible(true);
+        add.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        add.setLocationRelativeTo(null);
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
+
+    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+        // TODO add your handling code here:
+        //Login.SMSG_PROTOCOL.send();
+        Login.SMSG_PROTOCOL.socketClose();
+        for (String nama: buddyOnline)
+        {
+            if(((ChatBox) Login.SMSG_PROTOCOL.map.get(nama)) != null)
+                ((ChatBox) Login.SMSG_PROTOCOL.map.get(nama)).dispose();
+        }
+        for (String nama: buddyOffline)
+        {
+            if(((ChatBox) Login.SMSG_PROTOCOL.map.get(nama)) != null)
+                ((ChatBox) Login.SMSG_PROTOCOL.map.get(nama)).dispose();
+        }
+        Login.SMSG_PROTOCOL.map.clear();
+        Login.SMSG_PROTOCOL.stop();
+        this.dispose();
+        Login.getSingleton().setLocationRelativeTo(null);
+        Login.getSingleton().clearBox();
+        Login.getSingleton().setVisible(true);
+    }//GEN-LAST:event_jMenuItem2ActionPerformed
+
+    private void OnlineValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_OnlineValueChanged
+        // TODO add your handling code here:
+        //        int iFirst = evt.getFirstIndex();
+        //        int iLast = evt.getLastIndex();
+        //        for (int s = iFirst; s <= iLast; s++) {
+        //            System.out.printf("index: %d", s);
+        //        }
+        //System.out.print(sortedModel.getElementAt(1));
+    }//GEN-LAST:event_OnlineValueChanged
+
+    private void OnlineMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_OnlineMouseClicked
+
+        // TODO add your handling code here:
+        if (evt.getClickCount() > 1) {
+            int index = list.locationToIndex(evt.getPoint());
+            String temp = list.getModel().getElementAt(index-1).toString();
+            Login.SMSG_PROTOCOL.chat(temp);
+        }
+}//GEN-LAST:event_OnlineMouseClicked
+
+    private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jList1MouseClicked
+
+        // TODO add your handling code here:
+        if (evt.getClickCount() > 1) {
+            
+        }
+    }//GEN-LAST:event_jList1MouseClicked
+
+    public void updateFriend()
+    {
+        String tData = '\30'+Login.SMSG_PROTOCOL.username;
+        Login.SMSG_PROTOCOL.setService(Protocol.SMSG_RETFRIEND);
+        Login.SMSG_PROTOCOL.setPktLen(tData.length() + 20);
+        Login.SMSG_PROTOCOL.setData(tData);
+        Login.SMSG_PROTOCOL.send();
+    }
 
     /**
     * @param args the command line arguments
@@ -104,20 +323,25 @@ public class MainMenu extends javax.swing.JFrame {
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new MainMenu().setVisible(true);
+                MainMenu app = new MainMenu();
+                app.setVisible(true);
+                //app.ex();
             }
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JList Online;
+    private javax.swing.JList jList1;
     private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
-    private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JLabel username;
     // End of variables declaration//GEN-END:variables
 
 }

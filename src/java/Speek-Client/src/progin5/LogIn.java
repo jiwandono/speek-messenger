@@ -1,21 +1,27 @@
 package progin5;
 
+import java.awt.event.KeyEvent;
 import javax.swing.ImageIcon;
-import java.io.*;
-import java.net.*;
 
 /**
  *
  * @author Ananti
  */
-public class LogIn extends javax.swing.JFrame {
+public class Login extends javax.swing.JFrame {
+    public static Protocol SMSG_PROTOCOL;
+    public static String username;
+    /** Creates new form Login */
 
-       
-    /** Creates new form LogIn */
-    public LogIn() {
+    private static Login login = new Login();
+    
+    public Login() {
         initComponents();
         setIconImage(new ImageIcon("src/resource/mugabe.png").getImage());
-
+    }
+    
+    public static Login getSingleton()
+    {
+        return login;
     }
 
     /** This method is called from within the constructor to
@@ -37,7 +43,9 @@ public class LogIn extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("MIS-Log In"); // NOI18N
+        setTitle("Speek!"); // NOI18N
+        setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        setResizable(false);
 
         jLabel1.setFont(new java.awt.Font("Cut-n-Paste", 0, 14));
         jLabel1.setText("Log In");
@@ -50,8 +58,18 @@ public class LogIn extends javax.swing.JFrame {
         jLabel3.setName("jLabel3"); // NOI18N
 
         txtPassword.setName("txtPassword"); // NOI18N
+        txtPassword.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                txtPasswordKeyPressed(evt);
+            }
+        });
 
         txtUser.setName("txtUser"); // NOI18N
+        txtUser.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                txtUserKeyPressed(evt);
+            }
+        });
 
         BLogIn.setText("Log In");
         BLogIn.setName("BLogIn"); // NOI18N
@@ -61,7 +79,7 @@ public class LogIn extends javax.swing.JFrame {
             }
         });
 
-        BCancel.setText("Cancel");
+        BCancel.setText("Exit");
         BCancel.setName("BCancel"); // NOI18N
         BCancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -71,6 +89,11 @@ public class LogIn extends javax.swing.JFrame {
 
         jLabel4.setText("Register");
         jLabel4.setName("Register"); // NOI18N
+        jLabel4.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel4MouseClicked(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -93,7 +116,7 @@ public class LogIn extends javax.swing.JFrame {
                                 .addComponent(BCancel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(BLogIn)))))
-                .addContainerGap(65, Short.MAX_VALUE))
+                .addContainerGap(79, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(204, Short.MAX_VALUE)
                 .addComponent(jLabel4)
@@ -128,31 +151,71 @@ public class LogIn extends javax.swing.JFrame {
 
     private void BCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BCancelActionPerformed
         // TODO add your handling code here:
+        Login.getSingleton().dispose();
         this.dispose();
     }//GEN-LAST:event_BCancelActionPerformed
 
     private void BLogInActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BLogInActionPerformed
         // TODO add your handling code here:
-        this.setVisible(false);
-        MainMenu mainmenu;
-        mainmenu = new MainMenu();
-        mainmenu.setLocationRelativeTo(null);
-        mainmenu.setVisible(true);
-        //Menu.setIconImage(new ImageIcon("src/resource/mugabe.png").getImage());
-
-        //create new protocol
-        String DLogin = '\30'+txtUser.getText()+'\31'+txtPassword.getText();
-        String DName = "";
-        DName = "SMSG";
-     
-        int pkt_len = DLogin.length() + 20;
-        System.out.println("pkt_len " + pkt_len);
-        Protocol PLogin = new Protocol(DName, 1000, pkt_len, 1000, 1000, DLogin);
-        PLogin.run(PLogin);
-
-        //create connection
-        
+        actLogin();
     }//GEN-LAST:event_BLogInActionPerformed
+
+    private void jLabel4MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel4MouseClicked
+        // TODO add your handling code here:
+        Register reg = new Register();
+        reg.setLocationRelativeTo(null);
+        reg.setVisible(true);
+        this.setVisible(false);
+    }//GEN-LAST:event_jLabel4MouseClicked
+
+    private void txtPasswordKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtPasswordKeyPressed
+        // TODO add your handling code here:
+        if(evt.getKeyCode() == KeyEvent.VK_ENTER)
+        {
+            actLogin();
+        }
+        else if(evt.getKeyCode() == KeyEvent.VK_ESCAPE)
+        {
+            Login.getSingleton().dispose();
+            this.dispose();
+        }
+    }//GEN-LAST:event_txtPasswordKeyPressed
+
+    private void txtUserKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtUserKeyPressed
+        // TODO add your handling code here:
+        if(evt.getKeyCode() == KeyEvent.VK_ENTER)
+        {
+            actLogin();
+        }
+        else if(evt.getKeyCode() == KeyEvent.VK_ESCAPE)
+        {
+            Login.getSingleton().dispose();
+            this.dispose();
+        }
+    }//GEN-LAST:event_txtUserKeyPressed
+
+    public void clearBox()
+    {
+        this.txtUser.setText("");
+        this.txtPassword.setText("");
+        this.txtUser.setFocusable(true);
+    }
+
+    public void actLogin()
+    {
+        if(txtPassword.getText() != null && txtUser.getText() != null)
+        {
+            this.setVisible(false);
+            //Menu.setIconImage(new ImageIcon("src/resource/mugabe.png").getImage());
+            String DLogin = '\30'+txtUser.getText()+'\31'+txtPassword.getText();
+            int pkt_len = DLogin.length() + 20;
+            SMSG_PROTOCOL = new Protocol(pkt_len, Protocol.SMSG_SERVICE_LOGON, 0, DLogin);
+            SMSG_PROTOCOL.connect();
+            SMSG_PROTOCOL.send();
+            SMSG_PROTOCOL.start();
+            SMSG_PROTOCOL.setUsername(txtUser.getText());
+        }
+    }
 
     /**
     * @param args the command line arguments
@@ -160,7 +223,7 @@ public class LogIn extends javax.swing.JFrame {
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new LogIn().setVisible(true);
+                new Login().setVisible(true);
             }
         });
     }

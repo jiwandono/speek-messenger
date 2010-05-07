@@ -72,7 +72,7 @@ typedef struct {
  *
  * SMSG_REGISTER
  * Client:
- * \30username\31status
+ * \30username\31password
  * Server:
  * Status 1 kalau berhasil, 0 kalau gagal
  *

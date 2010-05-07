@@ -6,7 +6,7 @@ package progin5;
  */
 public class Main {
     public static void main (String[] args) {
-        LogIn log = new LogIn();
+        Login log = new Login();
         log.setLocationRelativeTo(null);
         log.setVisible(true);
     }

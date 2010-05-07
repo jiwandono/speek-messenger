@@ -119,6 +119,22 @@ char * getUsername(char * userid) {
 	return trow[0];
 }
 
+char * getUsernameFromSD(int sd) {
+	MYSQL_RES *tres;
+	MYSQL_ROW trow;
+	char tquery[256];
+	char tstr[256];
+	
+	strcpy(tquery, "SELECT `username` FROM `user` WHERE `id` = (SELECT `userid` FROM `presence` WHERE `sd` = '");
+	strcat(tquery, itoa(sd, tstr, 10));
+	strcat(tquery, "')");
+	tres = db_query(dbconn, tquery);
+	
+	trow = mysql_fetch_row(tres);
+	
+	return trow[0];
+}
+
 int processMessage(int sd, protocol imsg) {
 	protocol omsg;
 	protocol tmsg;
@@ -139,6 +155,7 @@ int processMessage(int sd, protocol imsg) {
 	/* Service variables */
 	// GENERIC
 	char * username;
+	char * password;
 	
 	// LOGON
 	char * logon_username;
@@ -153,6 +170,9 @@ int processMessage(int sd, protocol imsg) {
 	char * msg_sender;
 	char * msg_receiver;
 	char * msg_content;
+	
+	// ADD/REM FRIEND
+	char * buddy;
 	
 	if(strcmp(imsg.name, PROTOCOL_NAME) != 0) {
 		return 0;
@@ -242,6 +262,8 @@ int processMessage(int sd, protocol imsg) {
 		
 		case SMSG_SERVICE_LOGOFF:
 			printf("[CLIENT-%d] Logged off.\n", sd);
+			omsg.status = htonl(SMSG_STATUS_SUCCESS);
+			strcpy(omsg.data, "OK");
 			break;
 		
 		case SMSG_MESSAGE:
@@ -281,7 +303,7 @@ int processMessage(int sd, protocol imsg) {
 			
 			printf("[CLIENT-%d] File transfer request to %s\n", sd, username);
 			
-			strcpy(query, "SELECT `ip` FROM `presence` WHERE `userid` = (SELECT `id` AS `userid` FROM `user` WHERE `username` = '");
+			strcpy(query, "SELECT `user`.`username`, `presence`.`ip` FROM `user`, `presence` WHERE `user`.`id` = `presence`.`userid` AND `presence`.`userid` = (SELECT `id` AS `userid` FROM `user` WHERE `username` = '");
 			strcat(query, username);
 			strcat(query, "')");
 			dbres = db_query(dbconn, query);
@@ -294,6 +316,8 @@ int processMessage(int sd, protocol imsg) {
 				omsg.status = htonl(SMSG_STATUS_SUCCESS);
 				strcpy(omsg.data, "\30");
 				strcat(omsg.data, row[0]);
+				strcat(omsg.data, "\31");
+				strcat(omsg.data, row[1]);
 			} else {
 				printf("[CLIENT-%d] User %s is offline. Filetransfer not possible.\n", sd, username);
 				
@@ -303,16 +327,58 @@ int processMessage(int sd, protocol imsg) {
 			break;
 		
 		case SMSG_ADDFRIEND:
+			tstr1 = strtok(imsg.data, "\30");
+			username = strtok(tstr1, "\31");
+			buddy = strtok(NULL, "\31");
+			
+			printf("[CLIENT-%d] User %s adds %s as friend.\n", sd, username, buddy);
+			
+			strcpy(query, "SELECT * FROM `user` WHERE `username` = '");
+			strcat(query, buddy);
+			strcat(query, "'");
+			dbres = db_query(dbconn, query);
+			
+			if(mysql_num_rows(dbres) > 0) {
+				strcpy(query, "INSERT INTO `friend` (`buddy1`, `buddy2`) SELECT `id` AS `buddy1`, (SELECT `id` FROM `user` WHERE `username` = '");
+				strcat(query, buddy);
+				strcat(query, "') AS `buddy2` FROM `user` WHERE `username` = '");
+				strcat(query, username);
+				strcat(query, "'");
+				dbres = db_query(dbconn, query);
+				
+				omsg.status = htonl(SMSG_STATUS_SUCCESS);
+				strcpy(omsg.data, "OK");
+			} else {
+				printf("[CLIENT-%d] User %s does not exist.\n", sd, buddy);
+				
+				omsg.status = htonl(SMSG_STATUS_FAILED);
+				strcpy(omsg.data, "ERR");
+			}
 			
 			break;
 		
 		case SMSG_REMFRIEND:
+			tstr1 = strtok(imsg.data, "\30");
+			username = strtok(tstr1, "\31");
+			buddy = strtok(NULL, "\31");
+			
+			printf("[CLIENT-%d] User %s removes %s from friendlist.\n", sd, username, buddy);
+			
+			strcpy(query, "DELETE FROM `friend` WHERE `buddy1` = (SELECT `id` FROM `user` WHERE `username` = '");
+			strcat(query, username);
+			strcat(query, "') AND `buddy2` = (SELECT `id` FROM `user` WHERE `username` = '");
+			strcat(query, buddy);
+			strcat(query, "')");
+			dbres = db_query(dbconn, query);
+			
+			omsg.status = htonl(SMSG_STATUS_SUCCESS);
+			strcpy(omsg.data, "OK");
 			
 			break;
 		
 		case SMSG_RETFRIEND:
 			username = strtok(imsg.data, "\30");
-			printf("[CLIENT-%d] Retrieving friend list for user [%s]\n", sd, username);
+			printf("[CLIENT-%d] Retrieving friend list for user %s\n", sd, username);
 			
 			strcpy(query, "SELECT DISTINCT `user`.`username`, `presence`.`sd` FROM `user`, `friend` LEFT JOIN `presence` ON (`friend`.`buddy2` = `presence`.`userid`) WHERE `friend`.`buddy2` = `user`.`id` AND `friend`.`buddy1` = (SELECT `id` AS `buddy1` FROM `user` WHERE `username` = '");
 			strcat(query, username);
@@ -339,6 +405,32 @@ int processMessage(int sd, protocol imsg) {
 			break;
 		
 		case SMSG_REGISTER:
+			tstr1 = strtok(imsg.data, "\30");
+			username = strtok(tstr1, "\31");
+			password = strtok(NULL, "\31");
+			
+			printf("[CLIENT-%d] Register username=%s, password=%s\n", sd, username, password);
+			
+			strcpy(query, "SELECT `id` FROM `user` WHERE `username` = '");
+			strcat(query, username);
+			strcat(query, "'");
+			dbres = db_query(dbconn, query);
+			
+			if(mysql_num_rows(dbres) > 0) {
+				omsg.status = htonl(SMSG_STATUS_FAILED);
+				strcpy(omsg.data, "ERR");
+				printf("[CLIENT-%d] User %s already exists.\n", sd, username);
+			} else {
+				strcpy(query, "INSERT INTO `user` (`username`, `password`) VALUES('");
+				strcat(query, username);
+				strcat(query, "', '");
+				strcat(query, password);
+				strcat(query, "')");
+				dbres = db_query(dbconn, query);
+			
+				omsg.status = htonl(SMSG_STATUS_SUCCESS);
+				strcpy(omsg.data, "OK");
+			}
 			
 			break;
 		
@@ -502,10 +594,10 @@ int main(int argc, char *argv[]) {
 						if(nbytes == 0) {
 							/* connection closed */
 							printf("[CLIENT-%d] ", i);
-							printf("Client disconnected\n", i);
+							printf("Client disconnected, connection closed.\n");
 						} else {
 							printf("[CLIENT-%d] ", i);
-							perror("Client disconnected");
+							printf("Client disconnected.\n");
 						}
 						
 						/* Broadcast off status to online friends */
@@ -526,7 +618,7 @@ int main(int argc, char *argv[]) {
 								omsg.service = htonl(SMSG_STATUSUPDATE);
 								omsg.status = htonl(SMSG_STATUS_OFFLINE);
 								strcpy(omsg.data, "\30");
-								strcat(omsg.data, username);
+								strcat(omsg.data, getUsernameFromSD(i));
 								
 								nbytes = measurePacket(&omsg);
 								
